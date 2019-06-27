@@ -2,13 +2,9 @@ package edu.spring.cloud.catalogservice.service;
 
 import edu.spring.cloud.catalogservice.dao.ProductRepository;
 import edu.spring.cloud.catalogservice.model.internal.Product;
-import edu.spring.cloud.catalogservice.model.outcomming.ProductInventoryResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -19,12 +15,14 @@ import java.util.Optional;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final RestTemplate restTemplate;
+    private final InventoryServiceClient inventoryServiceClient;
+
 
     @Autowired
-    public ProductService(ProductRepository productRepository, RestTemplate restTemplate) {
+    public ProductService(ProductRepository productRepository,
+                          InventoryServiceClient inventoryServiceClient) {
         this.productRepository = productRepository;
-        this.restTemplate = restTemplate;
+        this.inventoryServiceClient = inventoryServiceClient;
     }
 
     public List<Product> findAllProducts() {
@@ -34,21 +32,16 @@ public class ProductService {
     public Optional<Product> findProductByCode(String code) {
         Optional<Product> result = productRepository.findByCode(code);
         result.ifPresent(product->{
+            log.info("1: " + Thread.currentThread());
             log.info("Fetching inventory level for product_code: "+code);
-            ResponseEntity<ProductInventoryResponse> itemResponseEntity =
-                    restTemplate.getForEntity("http://inventory-service/api/inventory/{code}",
-                            ProductInventoryResponse.class,
-                            code);
-            if(itemResponseEntity.getStatusCode() == HttpStatus.OK) {
-                int quantity = itemResponseEntity.getBody().getQuantity();
+            inventoryServiceClient.getProductInventoryByCode(code).ifPresent(response->{
+                int quantity = response.getQuantity();
                 log.info("Available quantity: "+quantity);
                 product.setInStock(quantity> 0);
-            } else {
-                log.error("Unable to get inventory level for product_code: "+code +
-                        ", StatusCode: "+itemResponseEntity.getStatusCode());
-            }
+            });
+            log.info("4: " + Thread.currentThread());
         });
-        return productRepository.findByCode(code);
+        return result;
     }
 }
 
