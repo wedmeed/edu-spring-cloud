@@ -1,4 +1,4 @@
-package edu.spring.cloud.catalogservice.dao;
+package edu.spring.cloud.catalogservice.model.internal;
 
 import lombok.Data;
 import javax.persistence.*;
@@ -15,4 +15,6 @@ public class Product {
     private String name;
     private String description;
     private double price;
+    @Transient
+    private boolean inStock;
 }

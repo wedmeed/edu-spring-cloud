@@ -1,7 +1,7 @@
 package edu.spring.cloud.catalogservice.web;
 
 import edu.spring.cloud.catalogservice.service.ProductService;
-import edu.spring.cloud.catalogservice.dao.Product;
+import edu.spring.cloud.catalogservice.model.internal.Product;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
