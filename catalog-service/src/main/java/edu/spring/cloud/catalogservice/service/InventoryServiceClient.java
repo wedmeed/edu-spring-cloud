@@ -24,12 +24,10 @@ public class InventoryServiceClient {
     @HystrixCommand(commandKey = "inventory-query", fallbackMethod = "getDefaultProductInventoryByCode")
     public Optional<ProductInventoryResponse> getProductInventoryByCode(String productCode)
     {
-        log.info("2: " + Thread.currentThread());
         ResponseEntity<ProductInventoryResponse> itemResponseEntity =
                 restTemplate.getForEntity("http://inventory-service/api/inventory/{code}",
                         ProductInventoryResponse.class,
                         productCode);
-        log.info("3: " + Thread.currentThread());
         if (itemResponseEntity.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(itemResponseEntity.getBody());
         } else {

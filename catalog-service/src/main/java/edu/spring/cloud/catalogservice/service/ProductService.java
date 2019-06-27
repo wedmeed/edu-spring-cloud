@@ -32,14 +32,12 @@ public class ProductService {
     public Optional<Product> findProductByCode(String code) {
         Optional<Product> result = productRepository.findByCode(code);
         result.ifPresent(product->{
-            log.info("1: " + Thread.currentThread());
             log.info("Fetching inventory level for product_code: "+code);
             inventoryServiceClient.getProductInventoryByCode(code).ifPresent(response->{
                 int quantity = response.getQuantity();
                 log.info("Available quantity: "+quantity);
                 product.setInStock(quantity> 0);
             });
-            log.info("4: " + Thread.currentThread());
         });
         return result;
     }
